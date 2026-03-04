@@ -10,6 +10,76 @@ import {
   User, ClipboardList, Dumbbell, ChevronRight
 } from 'lucide-react';
 
+/* --- HELPER: Responsive Window Size Hook --- */
+const useWindowSize = () => {
+  const [width, setWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return width;
+};
+
+/* --- HELPER: Inject Responsive CSS for App.css Classes --- */
+const ResponsiveStyles = () => (
+  <style>{`
+    /* Global Responsive Overrides */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    @media (max-width: 1024px) {
+      .hero-grid, .stats-grid { 
+        grid-template-columns: 1fr !important; 
+        gap: 40px !important; 
+        text-align: center; 
+      }
+      .hero-buttons { 
+        justify-content: center; 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 15px; 
+      }
+      .footer-grid { 
+        grid-template-columns: 1fr !important; 
+        gap: 30px; 
+        text-align: center; 
+      }
+      .footer-grid ul { 
+        align-items: center; 
+      }
+    }
+
+    @media (max-width: 768px) {
+      .features-grid { 
+        grid-template-columns: repeat(2, 1fr) !important; 
+      }
+      .nav-container { 
+        flex-direction: column; 
+        gap: 15px; 
+      }
+      .nav-links { 
+        flex-wrap: wrap; 
+        justify-content: center; 
+        gap: 10px; 
+      }
+      h1 { font-size: 2.2rem !important; }
+      h2 { font-size: 1.8rem !important; }
+    }
+
+    @media (max-width: 480px) {
+      .features-grid { 
+        grid-template-columns: 1fr !important; 
+      }
+    }
+  `}</style>
+);
+
 /* --- HELPER: Scroll To Top & Hash Handling --- */
 const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
@@ -147,7 +217,7 @@ const XAIExplanation = ({ formData, prediction }) => {
   );
 };
 
-/* --- FORM HELPERS (MOVED OUTSIDE TO FIX INPUT BUG) --- */
+/* --- FORM HELPERS --- */
 const SectionHeader = ({ icon: Icon, title }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
     <Icon size={18} color="#0F766E" />
@@ -156,15 +226,15 @@ const SectionHeader = ({ icon: Icon, title }) => (
 );
 
 const InputGroup = ({ label, name, value, onChange, type = "number", placeholder, options }) => (
-  <div className="form-group">
-    <label style={{ fontSize: '0.8rem', fontWeight: '600', color: '#64748B', marginBottom: '6px' }}>{label}</label>
+  <div className="form-group" style={{ width: '100%' }}>
+    <label style={{ fontSize: '0.8rem', fontWeight: '600', color: '#64748B', marginBottom: '6px', display: 'block' }}>{label}</label>
     {options ? (
       <select
         className="form-input"
         name={name}
         value={value}
         onChange={onChange}
-        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#F8FAFC', color: '#0F172A', transition: 'all 0.2s' }}
+        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#F8FAFC', color: '#0F172A', transition: 'all 0.2s', boxSizing: 'border-box' }}
       >
         {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
       </select>
@@ -177,7 +247,7 @@ const InputGroup = ({ label, name, value, onChange, type = "number", placeholder
         required
         placeholder={placeholder}
         onChange={onChange}
-        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#fff', color: '#0F172A', transition: 'all 0.2s' }}
+        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#fff', color: '#0F172A', transition: 'all 0.2s', boxSizing: 'border-box' }}
       />
     )}
   </div>
@@ -187,17 +257,17 @@ const InputGroup = ({ label, name, value, onChange, type = "number", placeholder
 
 const Navbar = () => {
   return (
-    <nav className="navbar">
-      <div className="container nav-container">
-        <Link to="/" className="logo">
-          <Heart fill="#0F766E" />
+    <nav className="navbar" style={{ padding: '15px 0' }}>
+      <div className="container nav-container" style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none', color: '#0F172A' }}>
+          <Heart fill="#0F766E" color="#0F766E" />
           <span>CardioAI</span>
         </Link>
-        <div className="nav-links">
-          <Link to="/">Home</Link>
-          <Link to="/#about">About</Link>
-          <Link to="/#model">Model Performance</Link>
-          <Link to="/predict" className="btn btn-primary" style={{ padding: '8px 20px', fontSize: '0.9rem', color: 'white' }}>
+        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: '#475569', fontWeight: '500' }}>Home</Link>
+          <Link to="/#about" style={{ textDecoration: 'none', color: '#475569', fontWeight: '500' }}>About</Link>
+          <Link to="/#model" style={{ textDecoration: 'none', color: '#475569', fontWeight: '500' }}>Model Performance</Link>
+          <Link to="/predict" className="btn btn-primary" style={{ padding: '8px 20px', fontSize: '0.9rem', color: 'white', background: '#0F766E', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
             Check Risk
           </Link>
         </div>
@@ -207,31 +277,31 @@ const Navbar = () => {
 };
 
 const Footer = () => (
-  <footer className="footer">
+  <footer className="footer" style={{ background: '#0F172A', color: '#CBD5E1', padding: '60px 0 20px 0' }}>
     <div className="container">
       <div className="footer-grid">
         <div>
-          <div className="footer-logo">
-            <Heart fill="#fff" /> CardioAI
+          <div className="footer-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom: '15px' }}>
+            <Heart fill="#0F766E" color="#0F766E" /> CardioAI
           </div>
-          <p>A machine learning final year project dedicated to saving lives through early algorithm-based detection.</p>
+          <p style={{ maxWidth: '400px', lineHeight: '1.6' }}>A machine learning final year project dedicated to saving lives through early algorithm-based detection.</p>
         </div>
         <div>
           <h4 style={{ color: 'white', marginBottom: '16px' }}>Quick Links</h4>
-          <ul style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/#model">Model Performance</Link></li>
-            <li><Link to="/predict">Prediction Tool</Link></li>
+          <ul style={{ display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0 }}>
+            <li><Link to="/" style={{ color: '#CBD5E1', textDecoration: 'none' }}>Home</Link></li>
+            <li><Link to="/#model" style={{ color: '#CBD5E1', textDecoration: 'none' }}>Model Performance</Link></li>
+            <li><Link to="/predict" style={{ color: '#CBD5E1', textDecoration: 'none' }}>Prediction Tool</Link></li>
           </ul>
         </div>
       </div>
 
-      <div className="disclaimer">
+      <div className="disclaimer" style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '8px', marginTop: '40px', marginBottom: '20px', fontSize: '0.9rem' }}>
         <Info size={16} style={{ verticalAlign: 'middle', marginRight: '8px' }} />
         <strong>DISCLAIMER:</strong> This tool is for educational purposes only. It is not a medical diagnosis.
       </div>
 
-      <div className="text-center" style={{ fontSize: '0.85rem' }}>
+      <div className="text-center" style={{ fontSize: '0.85rem', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
         <p>&copy; 2026 University Final Year Project. All rights reserved.</p>
       </div>
     </div>
@@ -241,32 +311,32 @@ const Footer = () => (
 /* --- PAGE 1: HOME PAGE COMPONENTS --- */
 
 const Hero = () => (
-  <section className="section hero">
+  <section className="section hero" style={{ padding: '80px 0', overflow: 'hidden' }}>
     <div className="container hero-grid">
       <div className="hero-content">
-        <span className="badge badge-primary">AI-POWERED HEALTHCARE</span>
-        <h1>
+        <span className="badge badge-primary" style={{ display: 'inline-block', padding: '6px 12px', background: '#CCFBF1', color: '#0F766E', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '20px', letterSpacing: '1px' }}>AI-POWERED HEALTHCARE</span>
+        <h1 style={{ fontSize: '3.5rem', fontWeight: '800', lineHeight: '1.2', color: '#0F172A', marginBottom: '20px' }}>
           Heart Disease <br />
-          <span className="gradient-text">Prediction System</span>
+          <span className="gradient-text" style={{ background: 'linear-gradient(to right, #0F766E, #14B8A6)', WebkitBackgroundClip: 'text', color: 'transparent' }}>Prediction System</span>
         </h1>
-        <p>
+        <p style={{ fontSize: '1.1rem', color: '#475569', marginBottom: '30px', lineHeight: '1.6' }}>
           Early detection of cardiovascular risk using advanced Machine Learning models trained on real patient data.
         </p>
         <div className="hero-buttons">
-          <Link to="/predict" className="btn btn-primary">
+          <Link to="/predict" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: '#0F766E', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: '600' }}>
             Check Your Risk <ArrowRight size={20} />
           </Link>
-          <a href="#model" className="btn btn-outline">View Model Details</a>
+          <a href="#model" className="btn btn-outline" style={{ display: 'inline-block', padding: '12px 24px', border: '2px solid #E2E8F0', color: '#334155', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', marginLeft: '15px' }}>View Model Details</a>
         </div>
       </div>
 
-      <div className="hero-image">
-        <div className="tech-info-card" style={{ background: 'white', color: '#333', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', border: '1px solid #e2e8f0' }}>
+      <div className="hero-image" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div className="tech-info-card" style={{ background: 'white', color: '#333', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', border: '1px solid #e2e8f0', padding: '30px', borderRadius: '16px', width: '100%', maxWidth: '400px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
             <div style={{ background: '#FEE2E2', padding: '12px', borderRadius: '50%', color: '#EF4444' }}><Heart size={32} fill="currentColor" /></div>
             <div>
-              <h3 style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>Cardio Analysis</h3>
-              <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Real-time processing</p>
+              <h3 style={{ fontWeight: 'bold', fontSize: '1.2rem', margin: 0 }}>Cardio Analysis</h3>
+              <p style={{ color: '#64748B', fontSize: '0.9rem', margin: 0 }}>Real-time processing</p>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -280,17 +350,17 @@ const Hero = () => (
 );
 
 const Features = () => (
-  <section className="section" id="about">
+  <section className="section" id="about" style={{ padding: '80px 0', background: '#F8FAFC' }}>
     <div className="container">
-      <div className="text-center" style={{ marginBottom: '60px' }}>
-        <h2 style={{ fontSize: '2rem', marginBottom: '10px' }}>Features Used</h2>
+      <div className="text-center" style={{ marginBottom: '60px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '2rem', marginBottom: '10px', color: '#0F172A' }}>Features Used</h2>
         <p style={{ color: '#475569' }}>Our model analyzes these key physiological indicators</p>
       </div>
       <div className="features-grid">
         {["Age", "Gender", "BMI", "Blood Pressure", "Cholesterol", "Glucose", "Smoking", "Alcohol", "Active Lifestyle"].map((item, idx) => (
-          <div key={idx} className="feature-card">
-            <div className="icon-box"><Activity size={20} /></div>
-            <p style={{ fontWeight: '600', color: '#334155' }}>{item}</p>
+          <div key={idx} className="feature-card" style={{ background: 'white', padding: '20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '15px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <div className="icon-box" style={{ background: '#F0FDFA', color: '#0F766E', padding: '10px', borderRadius: '8px', display: 'flex' }}><Activity size={20} /></div>
+            <p style={{ fontWeight: '600', color: '#334155', margin: 0 }}>{item}</p>
           </div>
         ))}
       </div>
@@ -299,10 +369,10 @@ const Features = () => (
 );
 
 const ModelStats = () => (
-  <section className="section model-section" id="model">
+  <section className="section model-section" id="model" style={{ padding: '80px 0' }}>
     <div className="container">
-      <div className="text-center" style={{ marginBottom: '60px' }}>
-        <h2 style={{ fontSize: '2rem', marginBottom: '10px' }}>Model Performance</h2>
+      <div className="text-center" style={{ marginBottom: '60px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '2rem', marginBottom: '10px', color: '#0F172A' }}>Model Performance</h2>
         <p style={{ color: '#475569' }}>Comparative analysis of machine learning algorithms.</p>
       </div>
       <div className="stats-grid">
@@ -310,20 +380,20 @@ const ModelStats = () => (
           <ModelAccuracyChart />
         </div>
 
-        <div className="tech-info-card" style={{ height: '100%' }}>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><Brain size={20} color="#14B8A6" /> Methodology</h3>
-          <ul className="tech-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <li>
-              <CheckCircle size={20} color="#14B8A6" style={{ flexShrink: 0 }} />
-              <span><strong>80/20 Train-Test Split:</strong> Ensures model validity on unseen data.</span>
+        <div className="tech-info-card" style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #E2E8F0', height: '100%', boxSizing: 'border-box' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#0F172A' }}><Brain size={20} color="#14B8A6" /> Methodology</h3>
+          <ul className="tech-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: 0, margin: 0, listStyle: 'none' }}>
+            <li style={{ display: 'flex', gap: '15px', color: '#475569', lineHeight: '1.5' }}>
+              <CheckCircle size={20} color="#14B8A6" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span><strong style={{ color: '#0F172A' }}>80/20 Train-Test Split:</strong> Ensures model validity on unseen data.</span>
             </li>
-            <li>
-              <CheckCircle size={20} color="#14B8A6" style={{ flexShrink: 0 }} />
-              <span><strong>Standard Scaler:</strong> Normalizes inputs like Age and Weight for uniform analysis.</span>
+            <li style={{ display: 'flex', gap: '15px', color: '#475569', lineHeight: '1.5' }}>
+              <CheckCircle size={20} color="#14B8A6" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span><strong style={{ color: '#0F172A' }}>Standard Scaler:</strong> Normalizes inputs like Age and Weight for uniform analysis.</span>
             </li>
-            <li>
-              <CheckCircle size={20} color="#14B8A6" style={{ flexShrink: 0 }} />
-              <span><strong>10-Fold Cross-Validation:</strong> Verified model consistency across different data subsets.</span>
+            <li style={{ display: 'flex', gap: '15px', color: '#475569', lineHeight: '1.5' }}>
+              <CheckCircle size={20} color="#14B8A6" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span><strong style={{ color: '#0F172A' }}>10-Fold Cross-Validation:</strong> Verified model consistency across different data subsets.</span>
             </li>
           </ul>
         </div>
@@ -335,6 +405,10 @@ const ModelStats = () => (
 /* --- PAGE 2: UPDATED PROFESSIONAL PREDICTION FORM --- */
 
 const PredictionForm = () => {
+  const width = useWindowSize();
+  const isMobile = width < 768;
+  const isTablet = width < 1024;
+
   const [probability, setProbability] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -358,7 +432,7 @@ const PredictionForm = () => {
 
     try {
       const values = [
-        Number(formData.age),      // age_years
+        Number(formData.age),
         Number(formData.gender),
         Number(formData.height),
         Number(formData.weight),
@@ -382,7 +456,7 @@ const PredictionForm = () => {
       const result = await response.json();
 
       setPrediction(result.prediction);
-      setProbability(result.probability);   // 👈 NEW
+      setProbability(result.probability);
 
     } catch (err) {
       console.error(err);
@@ -394,29 +468,30 @@ const PredictionForm = () => {
 
 
   return (
-    <section className="section form-section" style={{ paddingTop: '120px', minHeight: '100vh', background: '#F1F5F9' }}>
+    <section className="section form-section" style={{ padding: isMobile ? '60px 0' : '120px 0', minHeight: '100vh', background: '#F1F5F9' }}>
       <div className="container">
 
-        <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ marginBottom: '40px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '15px' }}>
           <div>
-            <Link to="/" style={{ color: '#0F766E', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '8px', fontSize: '0.9rem' }}>
+            <Link to="/" style={{ color: '#0F766E', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px', marginBottom: '8px', fontSize: '0.9rem', textDecoration: 'none' }}>
               ← Back to Home
             </Link>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0F172A', margin: 0 }}>Clinical Assessment</h2>
-            <p style={{ color: '#64748B', fontSize: '1.1rem' }}>Enter patient health metrics for AI risk analysis.</p>
+            <h2 style={{ fontSize: isMobile ? '2rem' : '2.5rem', fontWeight: '800', color: '#0F172A', margin: 0 }}>Clinical Assessment</h2>
+            <p style={{ color: '#64748B', fontSize: '1.1rem', marginTop: '8px' }}>Enter patient health metrics for AI risk analysis.</p>
           </div>
         </div>
 
-        <div className="demo-card" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0', background: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)' }}>
+        {/* --- RESPONSIVE INLINE GRID APPLIED HERE --- */}
+        <div className="demo-card" style={{ display: 'grid', gridTemplateColumns: isTablet ? '1fr' : '2fr 1fr', gap: '0', background: 'white', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)' }}>
 
           {/* LEFT SIDE: FORM */}
-          <div className="form-side" style={{ padding: '40px' }}>
+          <div className="form-side" style={{ padding: isMobile ? '20px' : '40px' }}>
             <form onSubmit={handleSubmit}>
 
               {/* Section 1: Personal Details */}
               <div style={{ marginBottom: '32px' }}>
                 <SectionHeader icon={User} title="Patient Profile" />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '20px' }}>
                   <InputGroup label="Age (Years)" name="age" value={formData.age} onChange={handleChange} placeholder="e.g. 50" />
                   <InputGroup label="Gender" name="gender" value={formData.gender} onChange={handleChange} options={[{ value: 1, label: 'Female' }, { value: 2, label: 'Male' }]} />
                   <InputGroup label="Height (cm)" name="height" value={formData.height} onChange={handleChange} placeholder="e.g. 165" />
@@ -427,7 +502,7 @@ const PredictionForm = () => {
               {/* Section 2: Clinical Metrics */}
               <div style={{ marginBottom: '32px' }}>
                 <SectionHeader icon={ClipboardList} title="Clinical Metrics" />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '20px' }}>
                   <InputGroup label="Systolic BP (ap_hi)" name="ap_hi" value={formData.ap_hi} onChange={handleChange} placeholder="e.g. 120" />
                   <InputGroup label="Diastolic BP (ap_lo)" name="ap_lo" value={formData.ap_lo} onChange={handleChange} placeholder="e.g. 80" />
                   <InputGroup label="Cholesterol Level" name="chol" value={formData.chol} onChange={handleChange} options={[{ value: 1, label: 'Normal' }, { value: 2, label: 'Above Normal' }, { value: 3, label: 'Well Above Normal' }]} />
@@ -438,7 +513,7 @@ const PredictionForm = () => {
               {/* Section 3: Lifestyle */}
               <div style={{ marginBottom: '40px' }}>
                 <SectionHeader icon={Dumbbell} title="Lifestyle Habits" />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '15px' }}>
                   <InputGroup label="Smoker" name="smoke" value={formData.smoke} onChange={handleChange} options={[{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }]} />
                   <InputGroup label="Alcohol Intake" name="alco" value={formData.alco} onChange={handleChange} options={[{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }]} />
                   <InputGroup label="Active Lifestyle" name="active" value={formData.active} onChange={handleChange} options={[{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }]} />
@@ -449,16 +524,16 @@ const PredictionForm = () => {
                 type="submit"
                 disabled={loading}
                 className="btn btn-primary"
-                style={{ width: '100%', padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', justifyContent: 'center', gap: '10px' }}
+                style={{ width: '100%', padding: '16px', fontSize: '1.1rem', borderRadius: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', background: '#0F766E', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
               >
-                {loading ? 'Processing...' : <>Predict Risk <ChevronRight /></>}
+                {loading ? 'Processing...' : <>Predict Risk <ChevronRight size={20} /></>}
               </button>
               {error && <p style={{ color: '#EF4444', textAlign: 'center', marginTop: '15px', fontWeight: '500' }}>{error}</p>}
             </form>
           </div>
 
           {/* RIGHT SIDE: RESULTS */}
-          <div className="result-side" style={{ backgroundColor: '#F8FAFC', padding: '40px', borderLeft: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="result-side" style={{ backgroundColor: '#F8FAFC', padding: isMobile ? '20px' : '40px', borderLeft: isTablet ? 'none' : '1px solid #E2E8F0', borderTop: isTablet ? '1px solid #E2E8F0' : 'none', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
 
             {prediction === null && !loading && (
               <div style={{ textAlign: 'center', color: '#94A3B8' }}>
@@ -472,9 +547,10 @@ const PredictionForm = () => {
 
             {loading && (
               <div style={{ textAlign: 'center' }}>
-                <div className="spinner" style={{ margin: '0 auto 20px auto', width: '60px', height: '60px', border: '5px solid #E2E8F0', borderTopColor: '#0F766E' }}></div>
+                <div className="spinner" style={{ margin: '0 auto 20px auto', width: '60px', height: '60px', border: '5px solid #E2E8F0', borderTopColor: '#0F766E', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                 <h3 style={{ color: '#0F766E', fontWeight: '700', fontSize: '1.2rem' }}>Consulting AI Model...</h3>
                 <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Processing physiological data...</p>
+                <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
               </div>
             )}
 
@@ -492,7 +568,7 @@ const PredictionForm = () => {
                   <div style={{ marginBottom: '15px', display: 'inline-block' }}>
                     {prediction === 1 ? <AlertTriangle size={60} /> : <CheckCircle size={60} />}
                   </div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: '800', margin: '0 0 10px 0' }}>
+                  <h2 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: '800', margin: '0 0 10px 0' }}>
                     {prediction === 1 ? 'Heart Disease Detected' : 'No Heart Disease Detected'}
                   </h2>
                   <p style={{ margin: 0, fontWeight: '500', opacity: 0.9 }}>
@@ -534,6 +610,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
+      <ResponsiveStyles /> {/* Instantly handles missing responsive CSS classes */}
       <div className="App">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -545,134 +622,3 @@ function App() {
 }
 
 export default App;
-
-
-
-// import React, { useState } from "react";
-
-// function App() {
-//   const [formData, setFormData] = useState({
-//     age: "",
-//     gender: "1",
-//     height: "",
-//     weight: "",
-//     ap_hi: "",
-//     ap_lo: "",
-//     chol: "1",
-//     gluc: "1",
-//     smoke: "0",
-//     alco: "0",
-//     active: "0"
-//   });
-
-//   const [prediction, setPrediction] = useState(null);
-//   const [probability, setProbability] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   const handleChange = (e) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value
-//     });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setError(null);
-//     setPrediction(null);
-
-//     try {
-//       const response = await fetch("http://127.0.0.1:5000/predict", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json"
-//         },
-//         body: JSON.stringify(formData)
-//       });
-
-//       if (!response.ok) throw new Error("Server error");
-
-//       const result = await response.json();
-
-//       setPrediction(result.prediction);
-//       setProbability(result.probability);
-
-//     } catch (err) {
-//       setError("Cannot connect to Flask server.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div style={{ padding: "40px", fontFamily: "Arial" }}>
-//       <h2>Cardio Disease Prediction</h2>
-
-//       <form onSubmit={handleSubmit}>
-
-//         <input name="age" placeholder="Age" onChange={handleChange} required />
-//         <input name="height" placeholder="Height (cm)" onChange={handleChange} required />
-//         <input name="weight" placeholder="Weight (kg)" onChange={handleChange} required />
-//         <input name="ap_hi" placeholder="Systolic BP" onChange={handleChange} required />
-//         <input name="ap_lo" placeholder="Diastolic BP" onChange={handleChange} required />
-
-//         <br /><br />
-
-//         <select name="gender" onChange={handleChange}>
-//           <option value="1">Female</option>
-//           <option value="2">Male</option>
-//         </select>
-
-//         <select name="chol" onChange={handleChange}>
-//           <option value="1">Normal Cholesterol</option>
-//           <option value="2">Above Normal</option>
-//           <option value="3">Well Above Normal</option>
-//         </select>
-
-//         <select name="gluc" onChange={handleChange}>
-//           <option value="1">Normal Glucose</option>
-//           <option value="2">Above Normal</option>
-//           <option value="3">Well Above Normal</option>
-//         </select>
-
-//         <select name="smoke" onChange={handleChange}>
-//           <option value="0">Non-Smoker</option>
-//           <option value="1">Smoker</option>
-//         </select>
-
-//         <select name="alco" onChange={handleChange}>
-//           <option value="0">No Alcohol</option>
-//           <option value="1">Alcohol</option>
-//         </select>
-
-//         <select name="active" onChange={handleChange}>
-//           <option value="0">Not Active</option>
-//           <option value="1">Active</option>
-//         </select>
-
-//         <br /><br />
-
-//         <button type="submit" disabled={loading}>
-//           {loading ? "Predicting..." : "Predict"}
-//         </button>
-//       </form>
-
-//       {error && <p style={{ color: "red" }}>{error}</p>}
-
-//       {prediction !== null && (
-//         <div style={{ marginTop: "20px" }}>
-//           <h3>
-//             {prediction === 1 ? "⚠ High Risk" : "✅ Low Risk"}
-//           </h3>
-//           <p>
-//             Risk Probability: {(probability * 100).toFixed(2)}%
-//           </p>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-// export default App;
